@@ -17,7 +17,6 @@
 #include "RenderCommandFence.h"
 #include "Misc/ITransaction.h"
 #include "Engine/Level.h"
-
 #include "Actor.generated.h"
 
 class AActor;
@@ -32,6 +31,13 @@ class UPrimitiveComponent;
 struct FAttachedActorInfo;
 struct FNetViewer;
 struct FNetworkObjectInfo;
+
+#if WITH_PHYSX
+namespace physx
+{
+	class PxContactSet;
+}
+#endif
 
 /** Chooses a method for actors to update overlap state (objects it is touching) on initialization, currently only used during level streaming. */
 UENUM(BlueprintType)
@@ -1573,6 +1579,14 @@ public:
 	 */
 	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName = "Hit"), Category="Collision")
 	void ReceiveHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit);
+
+	#if WITH_PHYSX
+		/** Modify a collision contact. */
+		virtual bool ModifyContact(uint32 bodyIndex, AActor* other, physx::PxContactSet& contacts)
+		{
+			return false;
+		}
+	#endif // WITH_PHYSX
 
 	/** Set the lifespan of this actor. When it expires the object will be destroyed. If requested lifespan is 0, the timer is cleared and the actor will not be destroyed. */
 	UFUNCTION(BlueprintCallable, Category="Utilities", meta=(Keywords = "delete destroy"))
